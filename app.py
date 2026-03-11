@@ -1,6 +1,6 @@
 import streamlit as st
 import pandas as pd
-from src.pages import patient_pages, substance_page
+from src.pages import patient_pages, substance_page, entries_page
 
 st.title("Sistema de Análisis de Accidentes Hospitalarios")
 
@@ -51,8 +51,8 @@ substance_page.show(global_filters)
 
 st.divider()
 
-st.header("🚑 Análisis de Accidentes")
-st.subheader("Próximamente......")
+st.header("🚑 Análisis de Ingresos")
+entries_page.show(global_filters)
 
 st.divider()
 
