@@ -5,47 +5,23 @@ import matplotlib.pyplot as plt
 
 def show(global_filters=None):
     
-    
     df_ent = pd.read_csv("src/data/data_entries.csv")
     df_pati = pd.read_csv("src/data/data_patient.csv")
     
-    
-    #filtros para entradas
-    st.subheader("Filtros de Búsqueda para Ingresos")
-    
-    col1, col2 = st.columns(2)
-    
-    with col1:
-        accident_type_options = ["Todas"] + list(df_ent['accidentType'].unique())
-        accident_type_filter = st.selectbox("Tipo de Accidente", accident_type_options, key="accident_type_filter")
-        
-    with col2:
-        accident_severity_options = ["Todas"] + list(df_ent['accidentSeverity'].unique())
-        accident_severity_filter = st.selectbox("Gravedad del Accidente", accident_severity_options, key="accident_severity_filter")
-    
-    
-    #aplicar filtros
+    # Aplicar filtros globales integrados
     df_ent_filtered = df_ent.copy()
+    df_pati_filtered = df_pati.copy()
     
-    if accident_type_filter != "Todas":
-        df_ent_filtered = df_ent_filtered[df_ent_filtered['accidentType'] == accident_type_filter]
-    
-    if accident_severity_filter != "Todas":
-        df_ent_filtered = df_ent_filtered[df_ent_filtered['accidentSeverity'] == accident_severity_filter]
+    if global_filters and 'filtered_patient_ids' in global_filters:
+        # Filtrar entradas solo de pacientes que cumplen TODOS los criterios
+        df_ent_filtered = df_ent_filtered[df_ent_filtered['patient_id'].isin(global_filters['filtered_patient_ids'])]
+        df_pati_filtered = df_pati_filtered[df_pati_filtered['id'].isin(global_filters['filtered_patient_ids'])]
     
     st.divider()
     
-
     st.subheader("Métricas de Ingresos")
     
-    df_merged = pd.merge(df_ent_filtered, df_pati, left_on='patient_id', right_on='id', how='inner')
-    
-    #aplicar filtros globales si existen
-    if global_filters:
-        df_merged = df_merged[(df_merged['age'] >= global_filters['age_min']) & (df_merged['age'] <= global_filters['age_max'])]
-        
-        if global_filters['sex'] != "Todos":
-            df_merged = df_merged[df_merged['sex'] == global_filters['sex']]
+    df_merged = pd.merge(df_ent_filtered, df_pati_filtered, left_on='patient_id', right_on='id', how='inner')
     
     
     col_metrics1, col_metrics2, col_metrics3, col_metrics4 = st.columns(4)

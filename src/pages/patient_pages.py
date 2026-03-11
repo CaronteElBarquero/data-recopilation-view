@@ -6,40 +6,19 @@ import matplotlib.pyplot as plt
 def show(global_filters=None):
     df = pd.read_csv("src/data/data_patient.csv")
 
-    df_patient = df[['patient_name', 'age', 'sex']]
+    df_patient = df[['patient_name', 'age', 'sex', 'id']]
     
     # Aplicar filtros globales si existen
-    if global_filters:
-        flt_first_age = global_filters['age_min']
-        flt_second_age = global_filters['age_max']
-        flt_sex = global_filters['sex']
-    else:
-        # Filtros locales (si no hay globales)
-        st.subheader("Filtros de Búsqueda")
-        col1, col2 = st.columns(2)
+    if global_filters and 'filtered_patient_ids' in global_filters:
+        # Filtrar solo los pacientes que cumplen TODOS los criterios
+        df_patient = df_patient[df_patient['id'].isin(global_filters['filtered_patient_ids'])]
+    elif global_filters:
+        # Filtros demográficos básicos
+        df_patient = df_patient[(df_patient['age'] >= global_filters['age_min']) & 
+                                (df_patient['age'] <= global_filters['age_max'])]
         
-        with col1:
-            flt_first_age = st.slider("Edad mínima", 0, 100, 0)
-            flt_sex = st.selectbox("Sexo", ["Todos", "M", "F"])
-        
-        with col2:
-            flt_second_age = st.slider("Edad máxima", 0, 100, 100)
-    
-    # Sección de colores
-    # st.subheader("Personalización de Colores")
-    # col3, col4 = st.columns(2)
-    
-    # with col3:
-    #     color_m = st.color_picker("Color para Masculino", "#1f77b4")
-    
-    # with col4:
-    #     color_f = st.color_picker("Color para Femenino", "#ff7f0e")
-
-    # Aplicar filtros
-    df_patient = df_patient[(df_patient['age'] >= flt_first_age) & (df_patient['age'] <= flt_second_age)]
-
-    if flt_sex != "Todos":
-        df_patient = df_patient[df_patient['sex'] == flt_sex]
+        if global_filters['sex'] != "Todos":
+            df_patient = df_patient[df_patient['sex'] == global_filters['sex']]
 
     st.divider()
     

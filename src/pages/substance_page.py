@@ -8,29 +8,14 @@ def show(global_filters=None):
     df_substances = pd.read_csv("src/data/data_substance.csv")
     df_patients = pd.read_csv("src/data/data_patient.csv")
     
-    #filtro para sustacias
-    
-    st.subheader("Filtros de Búsqueda de Sustancias")
-    
-    col1, col2 = st.columns(2)
-
-    with col1:
-        substance_options = ["Todas"] + list(df_substances['substance_name'].unique())
-        substance_filter = st.selectbox("Selecciona una sustancia", substance_options)
-
-    with col2:
-        frequency_options = ["Todas"] + list(df_substances['substance_freq'].unique())
-        frequency_filter = st.selectbox("Selecciona la frecuencia", frequency_options)
-
-    
-    #aplicar filtros
+    # Aplicar filtros globales integrados
     df_substances_filtered = df_substances.copy()
+    df_patients_filtered = df_patients.copy()
     
-    if substance_filter != "Todas":
-        df_substances_filtered = df_substances_filtered[df_substances_filtered['substance_name'] == substance_filter]
-    
-    if frequency_filter != "Todas":
-        df_substances_filtered = df_substances_filtered[df_substances_filtered['substance_freq'] == frequency_filter]
+    if global_filters and 'filtered_patient_ids' in global_filters:
+        # Filtrar sustancias solo de pacientes que cumplen TODOS los criterios
+        df_substances_filtered = df_substances_filtered[df_substances_filtered['patient_id'].isin(global_filters['filtered_patient_ids'])]
+        df_patients_filtered = df_patients_filtered[df_patients_filtered['id'].isin(global_filters['filtered_patient_ids'])]
     
     st.divider()
     
@@ -39,15 +24,7 @@ def show(global_filters=None):
 
     st.subheader("Cantidad de Pacientes por Consumo de sustancias")
 
-    df_merged = pd.merge(df_substances_filtered, df_patients, left_on='patient_id', right_on='id', how='inner')
-    
-    # Aplicar filtros globales si existen
-    if global_filters:
-        df_merged = df_merged[(df_merged['age'] >= global_filters['age_min']) & 
-                              (df_merged['age'] <= global_filters['age_max'])]
-        
-        if global_filters['sex'] != "Todos":
-            df_merged = df_merged[df_merged['sex'] == global_filters['sex']]
+    df_merged = pd.merge(df_substances_filtered, df_patients_filtered, left_on='patient_id', right_on='id', how='inner')
 
     col_metrics1, col_metrics2, col_metrics3 = st.columns(3)
 
