@@ -29,13 +29,19 @@ def show(global_filters=None):
     col_metrics1, col_metrics2, col_metrics3 = st.columns(3)
 
     with col_metrics1:
-        st.metric("Pacientes Totales", df_merged['patient_id'].nunique())
+        # Contar registros únicos de pacientes (no registros de sustancias)
+        total_unique_patients = df_merged['patient_id'].nunique()
+        st.metric("Pacientes Totales", total_unique_patients)
     
     with col_metrics2:
-        st.metric("Pacientes Masculinos", df_merged[df_merged['sex'] == 'M']['patient_id'].nunique())
+        # Contar pacientes masculinos únicos
+        masculinos_unique = df_merged[df_merged['sex'] == 'M']['patient_id'].nunique()
+        st.metric("Pacientes Masculinos", masculinos_unique)
 
     with col_metrics3:
-        st.metric("Pacientes Femeninos", df_merged[df_merged['sex'] == 'F']['patient_id'].nunique())
+        # Contar pacientes femeninos únicos
+        femeninos_unique = df_merged[df_merged['sex'] == 'F']['patient_id'].nunique()
+        st.metric("Pacientes Femeninos", femeninos_unique)
 
     #st.divider()
     
@@ -45,7 +51,10 @@ def show(global_filters=None):
     with col5:
         # Gráfico de dona (donut chart) para distribución por género
         st.subheader("Distribución de consumo de Droga por Género")
-        sex_counts = df_merged['sex'].value_counts()
+        
+        # Contar pacientes únicos por género (no registros de sustancias)
+        df_unique_patients = df_merged.drop_duplicates(subset=['patient_id']).copy()
+        sex_counts = df_unique_patients['sex'].value_counts()
         
         fig, ax = plt.subplots(figsize=(22, 22))
         colors = ['#3498db', '#e74c3c']  # Azul para M, Rojo para F
@@ -88,12 +97,16 @@ def show(global_filters=None):
     with col6:
         # Gráfico de barras agrupadas por edad y sexo
         st.subheader("Consumo de Drogas por Rango de Edad y Género")
+        
+        # Usar solo pacientes únicos para evitar contar múltiples veces
+        df_unique_patients = df_merged.drop_duplicates(subset=['patient_id']).copy()
+        
         age_bins = [0, 18, 35, 50, 65, 100]
         age_labels = ['0-17', '18-34', '35-49', '50-64', '65+']
-        df_merged['age_group'] = pd.cut(df_merged['age'], bins=age_bins, labels=age_labels, right=False)
+        df_unique_patients['age_group'] = pd.cut(df_unique_patients['age'], bins=age_bins, labels=age_labels, right=False)
         
         # Crear tabla cruzada para contar por edad y sexo
-        age_sex_counts = pd.crosstab(df_merged['age_group'], df_merged['sex'])
+        age_sex_counts = pd.crosstab(df_unique_patients['age_group'], df_unique_patients['sex'])
         
         fig2, ax2 = plt.subplots(figsize=(12, 8))
         
