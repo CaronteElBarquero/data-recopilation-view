@@ -3,32 +3,37 @@ import pandas as pd
 import matplotlib.pyplot as plt
 
 
-def show():
+def show(global_filters=None):
     df = pd.read_csv("src/data/data_patient.csv")
 
     df_patient = df[['patient_name', 'age', 'sex']]
     
-    # Sección de filtros
-    st.subheader("Filtros de Búsqueda")
-    
-    col1, col2 = st.columns(2)
-    
-    with col1:
-        flt_first_age = st.slider("Edad mínima", 0, 100, 0)
-        flt_sex = st.selectbox("Sexo", ["Todos", "M", "F"])
-    
-    with col2:
-        flt_second_age = st.slider("Edad máxima", 0, 100, 100)
+    # Aplicar filtros globales si existen
+    if global_filters:
+        flt_first_age = global_filters['age_min']
+        flt_second_age = global_filters['age_max']
+        flt_sex = global_filters['sex']
+    else:
+        # Filtros locales (si no hay globales)
+        st.subheader("Filtros de Búsqueda")
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            flt_first_age = st.slider("Edad mínima", 0, 100, 0)
+            flt_sex = st.selectbox("Sexo", ["Todos", "M", "F"])
+        
+        with col2:
+            flt_second_age = st.slider("Edad máxima", 0, 100, 100)
     
     # Sección de colores
-    st.subheader("Personalización de Colores")
-    col3, col4 = st.columns(2)
+    # st.subheader("Personalización de Colores")
+    # col3, col4 = st.columns(2)
     
-    with col3:
-        color_m = st.color_picker("Color para Masculino", "#1f77b4")
+    # with col3:
+    #     color_m = st.color_picker("Color para Masculino", "#1f77b4")
     
-    with col4:
-        color_f = st.color_picker("Color para Femenino", "#ff7f0e")
+    # with col4:
+    #     color_f = st.color_picker("Color para Femenino", "#ff7f0e")
 
     # Aplicar filtros
     df_patient = df_patient[(df_patient['age'] >= flt_first_age) & (df_patient['age'] <= flt_second_age)]
@@ -53,7 +58,7 @@ def show():
         femeninos = len(df_patient[df_patient['sex'] == 'F'])
         st.metric("Femenino", femeninos)
     
-    st.divider()
+    #st.divider()
     
     # Sección de visualización
     col5, col6 = st.columns([1.7, 2], gap="large")
@@ -64,7 +69,7 @@ def show():
         sex_counts = df_patient['sex'].value_counts()
         
         fig, ax = plt.subplots(figsize=(22, 22))
-        colors = [color_m if sex == 'M' else color_f for sex in sex_counts.index]
+        colors = ["#1f77b4" if sex == 'M' else "#ff7f0e" for sex in sex_counts.index]
         labels = ['Masculino' if sex == 'M' else 'Femenino' for sex in sex_counts.index]
         
         wedges, texts, autotexts = ax.pie(
