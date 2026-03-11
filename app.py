@@ -20,3 +20,14 @@ st.divider()
 st.header("Análisis de Pacientes")
 patient_pages.show()
 
+st.divider()
+
+st.header("Análisis de Accidentes")
+st.subheader("Próximamente......")
+
+st.divider()
+
+st.header("Análisis de Ingresos")
+st.subheader("Próximamente......")
+
+
