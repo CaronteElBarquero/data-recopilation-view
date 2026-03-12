@@ -44,7 +44,7 @@ def show(global_filters=None):
     
     with col5:
         # Gráfico de pastel (pie chart)
-        st.subheader("Distribución por Género en %")
+        st.subheader("Distribución de Pacientes por Género")
         sex_counts = df_patient['sex'].value_counts()
         
         fig, ax = plt.subplots(figsize=(22, 22))
@@ -85,41 +85,70 @@ def show(global_filters=None):
         st.pyplot(fig)
         
     with col6:
-        st.subheader("Distribución de Pacientes Agrupados por Edad")
+        st.subheader("Distribución de Pacientes Agrupados por Edad y Género")
         age_bins = [0, 18, 35, 50, 65, 100]
         age_labels = ['0-17', '18-34', '35-49', '50-64', '65+']
-        df_patient['age_group'] = pd.cut(df_patient['age'], bins=age_bins, labels=age_labels, right=False)
-        age_group_counts = df_patient['age_group'].value_counts().sort_values(ascending=False)
+        df_patient_copy = df_patient.copy()
+        
+        # Crear columna age_group con categorías ordenadas
+        df_patient_copy['age_group'] = pd.cut(df_patient_copy['age'], bins=age_bins, labels=age_labels, right=False, ordered=True)
+        
+        # Crear tabla cruzada para contar por edad y sexo
+        age_sex_counts = pd.crosstab(df_patient_copy['age_group'], df_patient_copy['sex'])
+        
+        # Reindexar con el orden correcto de las etiquetas
+        age_sex_counts = age_sex_counts.reindex(age_labels, fill_value=0)
         
         fig2, ax2 = plt.subplots(figsize=(12, 8))
         
-        # Crear gráfico de barras con colores degradados
-        bars = ax2.bar(
-            range(len(age_group_counts)), 
-            age_group_counts.values,
-            color=['#FF6B6B', '#4ECDC4', '#45B7D1', '#FFA07A', '#98D8C8'],
+        # Posiciones de las barras
+        x = range(len(age_sex_counts.index))
+        width = 0.35
+        
+        # Crear barras agrupadas
+        bars1 = ax2.bar(
+            [i - width/2 for i in x],
+            age_sex_counts['M'] if 'M' in age_sex_counts.columns else [0] * len(x),
+            width,
+            label='Masculino',
+            color='#1f77b4',
+            edgecolor='black',
+            linewidth=1.5
+        )
+        
+        bars2 = ax2.bar(
+            [i + width/2 for i in x],
+            age_sex_counts['F'] if 'F' in age_sex_counts.columns else [0] * len(x),
+            width,
+            label='Femenino',
+            color='#ff7f0e',
             edgecolor='black',
             linewidth=1.5
         )
         
         # Personalizar ejes
-        ax2.set_xticks(range(len(age_group_counts)))
-        ax2.set_xticklabels(age_group_counts.index, fontsize=16, weight='bold')
+        ax2.set_xticks(x)
+        ax2.set_xticklabels(age_sex_counts.index, fontsize=16, weight='bold')
         ax2.set_ylabel('Cantidad de Pacientes', fontsize=16, weight='bold')
         ax2.set_xlabel('Grupo de Edad', fontsize=16, weight='bold')
         
         # Agregar valores sobre las barras
-        for i, (bar, value) in enumerate(zip(bars, age_group_counts.values)):
-            height = bar.get_height()
-            ax2.text(
-                bar.get_x() + bar.get_width()/2., 
-                height,
-                f'{int(value)}',
-                ha='center', 
-                va='bottom',
-                fontsize=18,
-                weight='bold'
-            )
+        for bars in [bars1, bars2]:
+            for bar in bars:
+                height = bar.get_height()
+                if height > 0:
+                    ax2.text(
+                        bar.get_x() + bar.get_width()/2.,
+                        height,
+                        f'{int(height)}',
+                        ha='center',
+                        va='bottom',
+                        fontsize=14,
+                        weight='bold'
+                    )
+        
+        # Añadir leyenda
+        ax2.legend(fontsize=16, loc='upper right')
         
         # Añadir cuadrícula para mejor lectura
         ax2.grid(axis='y', alpha=0.3, linestyle='--')
