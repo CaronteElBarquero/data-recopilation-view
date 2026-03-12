@@ -19,6 +19,44 @@ en el entorno hospitalario.
 
 st.divider()
 
+
+# Advertencia sobre sesgos y limitaciones
+with st.expander("⚠️ Consideraciones sobre Sesgos y Limitaciones de los Datos"):
+
+    st.markdown(f"""
+    
+    **⚠️ Posibles sesgos a considerar:**
+    
+    1. **Sesgo de muestra pequeña:**
+        - Si los números son bajos (< 30 casos por categoría), las conclusiones pueden no ser representativas
+        - Las combinaciones raras pueden ser casuales, no causales
+    
+    2. **Sesgo de reporte:**
+        - Los datos solo incluyen casos **reportados** al hospital
+        - Accidentes menores o sin atención médica no están registrados
+        - El consumo de sustancias puede estar **subregistrado** (pacientes que no admiten consumo)
+    
+    3. **Sesgo temporal:**
+        - Los datos corresponden a un período específico
+        - Patrones estacionales o eventos especiales pueden afectar los resultados
+    
+    4. **Correlación ≠ Causalidad:**
+        - Una relación alta entre accidente y sustancia **NO confirma** que la sustancia causó el accidente
+        - Pueden existir otros factores no medidos (hora del día, condiciones climáticas, experiencia del conductor)
+    
+    5. **Sesgo de género:**
+        - Si hay desequilibrio significativo entre géneros (ej: 80% hombres, 20% mujeres), las comparaciones pueden ser injustas
+        - Los patrones de un género pueden dominar el análisis general
+    
+    **💡 Recomendaciones:**
+    - Interpreta los números bajos (< 5) con **extrema cautela**
+    - Considera estos datos como **exploratorios**, no concluyentes
+    - Complementa con estudios adicionales para validar patrones observados
+    - Ten en cuenta que los datos reflejan solo una **fracción** de la realidad
+    """)
+        
+st.divider()
+
 # Cargar todos los datos una vez
 df_patients = pd.read_csv("src/data/data_patient.csv")
 df_substances = pd.read_csv("src/data/data_substance.csv")
